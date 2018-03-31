@@ -3,6 +3,8 @@ import numpy as np
 from collections import defaultdict
 import operator
 import matplotlib.pyplot as plt
+import pandas as pd
+
 
 def chapter_1(df):
 	'''
@@ -30,6 +32,27 @@ def chapter_1(df):
 	print('Delta: {0} (weeks), {1} (hours)'.format(delta, delta * (24 * 7)))
 
 
+def make_hist(lst, trim=False):
+
+	def reject_outliers(data, m=2):
+	    return data[abs(data - np.mean(data)) < m * np.std(data)]
+	
+	if trim:
+		lst = reject_outliers(lst)
+	hist = defaultdict(int)
+	for item in lst:
+		hist[item] += 1
+	return hist
+
+
+def mode(hist):
+	return max(hist.items(), key=operator.itemgetter(1))[0]
+
+
+def all_modes(hist):
+	return sorted(hist.items(), key=operator.itemgetter(1), reverse=True)
+
+
 def chapter_2(df):
 	'''
 	ThinkStats Chapter 2 solutions
@@ -41,24 +64,6 @@ def chapter_2(df):
 		(np.mean(df_other[df_other['outcome'] == 1]['prglength']), df_other[df_other['outcome'] == 1]['prglength'].std())))
 
 	# show histogram of all prglengths for 2 df
-	def make_hist(lst, trim=False):
-
-		def reject_outliers(data, m=2):
-		    return data[abs(data - np.mean(data)) < m * np.std(data)]
-		
-		if trim:
-			lst = reject_outliers(lst)
-		hist = defaultdict(int)
-		for item in lst:
-			hist[item] += 1
-		return hist
-
-	def mode(hist):
-		return max(hist.items(), key=operator.itemgetter(1))[0]
-
-	def all_modes(hist):
-		return sorted(hist.items(), key=operator.itemgetter(1), reverse=True)
-
 	hist = make_hist(df_first[df_first['outcome'] == 1]['prglength'], True)
 	print(mode(hist))
 	print(all_modes(hist))
@@ -69,8 +74,50 @@ def chapter_2(df):
 	plt.show()
 
 
+def make_cdf(hist):
+	cdf = defaultdict(int)
+	total = 0
+	for k in sorted(hist.keys()):
+		total += hist[k]
+		cdf[k] = total
+	return cdf
+
+
+def chapter_4(df):
+	'''
+	ThinkStats chapter 4 solutions
+	'''
+	df_first = df[df['birthord'] == 1]
+	df_other = df[df['birthord'] != 1]
+	wgt_first = df_first[df_first['totalwgt_oz'] != 'NA']['totalwgt_oz']
+	wgt_other = df_other[df_other['totalwgt_oz'] != 'NA']['totalwgt_oz']
+
+	hist_first = make_hist(wgt_first)
+	hist_other = make_hist(wgt_other)
+
+	# plt.bar(np.fromiter(hist_first.keys(), dtype=float) - 0.2, list(hist_first.values()), width=0.4, align='center')
+	# plt.bar(np.fromiter(hist_other.keys(), dtype=float) + 0.2, list(hist_other.values()), width=0.2, align='center')
+	# plt.show()
+
+	cdf_first = make_cdf(hist_first)
+	cdf_other = make_cdf(hist_other)
+
+	plt.plot(np.fromiter(cdf_first.keys(), dtype=float) - 0.2, list(cdf_first.values()))
+	plt.plot(np.fromiter(cdf_other.keys(), dtype=float) + 0.2, list(cdf_other.values()))
+	plt.show()
+
+	sample = np.random.randn(1000)
+
+	hist = make_hist(sample)
+	cdf = make_cdf(hist)
+	plt.plot(np.fromiter(hist.keys(), dtype=float) + 0.2, list(hist.values()))
+	plt.show()
+	plt.plot(np.fromiter(cdf.keys(), dtype=float) + 0.2, list(cdf.values()))
+	plt.show()
+
+
 if __name__ == '__main__':
 	table = survey.Pregnancies()
 	table.ReadRecords('./data')
 	df = table.ConvertToDataFrame()
-	chapter_2(df)
+	chapter_4(df)
