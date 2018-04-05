@@ -4,6 +4,7 @@ from collections import defaultdict
 import operator
 import matplotlib.pyplot as plt
 import pandas as pd
+import random
 
 
 def chapter_1(df):
@@ -106,13 +107,15 @@ def chapter_4(df):
 	plt.plot(np.fromiter(cdf_other.keys(), dtype=float) + 0.2, list(cdf_other.values()))
 	plt.show()
 
-	sample = np.random.randn(1000)
 
+def random_study():
+	n = 1000
+	sample = [random.random() for _ in range(n)]
+	
 	hist = make_hist(sample)
 	cdf = make_cdf(hist)
-	plt.plot(np.fromiter(hist.keys(), dtype=float) + 0.2, list(hist.values()))
-	plt.show()
-	plt.plot(np.fromiter(cdf.keys(), dtype=float) + 0.2, list(cdf.values()))
+	plt.plot(np.fromiter(hist.keys(), dtype=float), list(hist.values()))
+	# plt.plot(np.fromiter(cdf.keys(), dtype=float), list(cdf.values()))
 	plt.show()
 
 
@@ -120,4 +123,4 @@ if __name__ == '__main__':
 	table = survey.Pregnancies()
 	table.ReadRecords('./data')
 	df = table.ConvertToDataFrame()
-	chapter_4(df)
+	random_study()
